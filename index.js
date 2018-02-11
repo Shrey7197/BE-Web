@@ -6,8 +6,8 @@ var express       = require("express"),
     localStrategy = require("passport-local"),
     Farmer          = require("./models/farmer");
     
-var url = process.env.DATABASEURL || "mongodb://localhost/agri_drone";
-mongoose.connect(url);
+//var url = process.env.DATABASEURL || "mongodb://localhost/agri_drone";
+mongoose.connect("mongodb://Shrey:Shrey7!97@ds231658.mlab.com:31658/agridrone");
     
 app.use(bodyParser.urlencoded({extended:true}));
 app.set("view engine","ejs");
