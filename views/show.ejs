@@ -1,0 +1,23 @@
+<% include partials/header %>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="list-group">
+                <li class="list-group-item active">Info 1</li>
+                <li class="list-group-item">Info 2</li>
+                <li class="list-group-item">Info 3</li>                
+            </div>
+        </div>
+        <div class="col-md-9">
+            <div class="thumbnail">
+                <img class="img-responsive" src="<%= survey.image %>">
+                <div class="caption-full">
+                    <h3><%= survey.date%></h3>
+                </div>
+            </div>
+        </div>
+    </div>    
+</div>
+
+<% include partials/footer %>

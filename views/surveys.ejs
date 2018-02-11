@@ -1,0 +1,33 @@
+<% include partials/header %>
+
+<div class="container">
+    <header class="jumbotron" style="background-image: url('https://3c1703fe8d.site.internapcdn.net/newman/gfx/news/hires/2017/eusfuturecyb.jpg');">
+        <div class="container">
+            <h1 style="color:white">AgriDrone</h1>
+            <h4 style="color:white">Helping farmers to drive down the cost and time required while imporoving the crop yield</h4>
+            <p>
+                <a class="btn btn-success" href="/surveys/new">Add a new Survey!</a>
+            </p>
+        </div>
+    </header>
+    
+    
+    <div class="row text-center" style="display:flex; flex-wrap:wrap">
+        <% surveys.forEach(function(survey){ %>
+        <div class="col-md-4 col-sm-6">
+            <div class="thumbnail">
+                <img style="height:200px; width:275px" src="<%= survey.image %>">
+                <div class="caption">
+                    <h4><%= survey.date %></h4>
+                </div>
+                <p>
+                    <a href="/surveys/<%=survey._id%>" class="btn btn-primary">More Info</a>
+                </p>
+            </div>
+        </div>
+        <% }) %>        
+    </div>
+
+</div>
+
+<% include partials/footer %>
