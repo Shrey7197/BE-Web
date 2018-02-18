@@ -3,12 +3,10 @@ var express       = require("express"),
     bodyParser    = require("body-parser"),
     mongoose      = require("mongoose"),
     passport      = require("passport"),
-    pass          = require("passport"),
     localStrategy = require("passport-local"),
-    techStrategy   = require("passport-local"),
     User          = require("./models/user");
     
-var url = process.env.DATABASEURL || "mongodb://localhost/agri_drone";
+//var url = process.env.DATABASEURL || "mongodb://localhost/agri_drone";
 mongoose.connect("mongodb://Shrey:Shrey7!97@ds231658.mlab.com:31658/agridrone");
 //mongoose.connect(url);
     
@@ -31,6 +29,7 @@ app.use(passport.session());
 passport.use(new localStrategy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
+
 
 //SCHEMA SETUP
 var surveySchema = new mongoose.Schema({
@@ -106,71 +105,116 @@ app.get("/surveys/:id",function(req,res){
        }
     });
 
-})
+});
 
 //AUTHENTICATION ROUTES
 //Farmer routes
 //Show Register Form
 app.get("/register", function(req, res) {
     res.render("register");
-})
+});
 
 //Signup logic
 app.post("/register", function(req,res){
-    var newFarmer = new User({username: req.body.username});
+    var newFarmer = new User({username: req.body.username, type: 1});
     User.register(newFarmer, req.body.password, function(err,farmer){
         if(err){
             console.log(err);
-            return res.render("register")
+            return res.render("register");
         }
         passport.authenticate("local")(req,res,function(){
            res.redirect("/surveys"); 
         });
     });
-})
+});
     
 //Show login form
 app.get("/login", function(req, res) {
     res.render("login");
 });
 
-app.post("/login", passport.authenticate("local", {
-    successRedirect: "/surveys",
-    failureRedirect: "/login"
-    }), function(req, res) {
-})
+app.post('/login', function(req, res, next) {
+    passport.authenticate('local', function(err, user, info) {
+        if (err) { return next(err); }
+        // Redirect if it fails
+        if (!user) { return res.redirect('/login'); }
+        User.findByUsername(req.body.username, function(err, foundUser) {
+            if(err){
+                console.log(err);
+            }
+            else{
+                if(foundUser.type == 1) {
+                    req.logIn(user, function(err) {
+                        if (err) { return next(err); }
+                        // Redirect if it succeeds
+                        return res.redirect('/surveys');
+                    });
+                }
+            }
+        });
+    })(req, res, next);
+});
 
 //Technician routes
 //Show Register Form
 app.get("/registertech", function(req, res) {
     res.render("registertech");
-})
+});
 
 //Signup logic
 app.post("/registertech", function(req,res){
-    var newTechnician = new User({username: req.body.username});
+    var newTechnician = new User({username: req.body.username, type:2});
     User.register(newTechnician, req.body.password, function(err,farmer){
         if(err){
             console.log(err);
-            return res.render("registertech")
+            return res.render("registertech");
         }
-        pass.authenticate("local")(req,res,function(){
+        passport.authenticate("local")(req,res,function(){
            res.redirect("/surveystech"); 
         });
     });
-})
+});
     
 //Show login form
 app.get("/logintech", function(req, res) {
     res.render("logintech");
 });
 
-app.post("/logintech", pass.authenticate("local", {
-    successRedirect: "/surveystech",
-    failureRedirect: "/logintech"
-    }), function(req, res) {
-});
+// app.post("/logintech",  passport.authenticate("local", {
+//     successRedirect: "/surveystech",
+//     failureRedirect: "/logintech"
+//     }) , function(req, res) {
+//         User.findByUsername(req.body.username, function(err, foundUser) {
+//             if(err){
+//                 console.log(err);
+//             }
+//             else{
+//                 console.log(foundUser.type);
+                
+// }})}
+// );
 
+app.post('/logintech', function(req, res, next) {
+    passport.authenticate('local', function(err, user, info) {
+        if (err) { return next(err); }
+        // Redirect if it fails
+        if (!user) { return res.redirect('/logintech'); }
+        User.findByUsername(req.body.username, function(err, foundUser) {
+            if(err){
+                console.log(err);
+            }
+            else{
+                if(foundUser.type == 2) {
+                    req.logIn(user, function(err) {
+                        if (err) { return next(err); }
+                        // Redirect if it succeeds
+                        return res.redirect('/surveystech');
+                    });
+                }
+            }
+        });
+    })(req, res, next);
+});
 
 //LOGOUT ROUTE
 app.get("/logout", function(req,res){
