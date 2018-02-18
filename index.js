@@ -1,13 +1,17 @@
 var express       = require("express"),
     app           = express(),
     bodyParser    = require("body-parser"),
+    bcrypt        = require("bcrypt"),
     mongoose      = require("mongoose"),
     passport      = require("passport"),
+    pass          = require("passport"),
     localStrategy = require("passport-local"),
-    Farmer          = require("./models/farmer");
+    techStrategy   = require("passport-local"),
+    User          = require("./models/user");
     
-//var url = process.env.DATABASEURL || "mongodb://localhost/agri_drone";
+var url = process.env.DATABASEURL || "mongodb://localhost/agri_drone";
 mongoose.connect("mongodb://Shrey:Shrey7!97@ds231658.mlab.com:31658/agridrone");
+//mongoose.connect(url);
     
 app.use(bodyParser.urlencoded({extended:true}));
 app.set("view engine","ejs");
@@ -24,10 +28,10 @@ app.use(require("express-session")({
 app.use(passport.initialize());
 app.use(passport.session());
 
-passport.use(new localStrategy(Farmer.authenticate()));
-passport.serializeUser(Farmer.serializeUser());
-passport.deserializeUser(Farmer.deserializeUser());
 
+passport.use(new localStrategy(User.authenticate()));
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
 
 //SCHEMA SETUP
 var surveySchema = new mongoose.Schema({
@@ -69,6 +73,10 @@ app.get("/surveys",function(req,res){
     });
 });
 
+app.get("/surveystech",function(req,res){
+    res.render("surveystech");
+});
+
 app.post("/surveys",function(req,res){
     var username = req.body.username;
     var date = req.body.date;
@@ -80,7 +88,7 @@ app.post("/surveys",function(req,res){
             console.log(err);
         }    
         else{
-            res.redirect("/surveys");        
+            res.render("/surveys",{username: username});        
         }
     });
 });
@@ -102,7 +110,7 @@ app.get("/surveys/:id",function(req,res){
 })
 
 //AUTHENTICATION ROUTES
-
+//Farmer routes
 //Show Register Form
 app.get("/register", function(req, res) {
     res.render("register");
@@ -110,8 +118,8 @@ app.get("/register", function(req, res) {
 
 //Signup logic
 app.post("/register", function(req,res){
-    var newFarmer = new Farmer({username: req.body.username});
-    Farmer.register(newFarmer, req.body.password, function(err,farmer){
+    var newFarmer = new User({username: req.body.username});
+    User.register(newFarmer, req.body.password, function(err,farmer){
         if(err){
             console.log(err);
             return res.render("register")
@@ -133,11 +141,43 @@ app.post("/login", passport.authenticate("local", {
     }), function(req, res) {
 })
 
+//Technician routes
+//Show Register Form
+app.get("/registertech", function(req, res) {
+    res.render("registertech");
+})
+
+//Signup logic
+app.post("/registertech", function(req,res){
+    var newTechnician = new User({username: req.body.username});
+    User.register(newTechnician, req.body.password, function(err,farmer){
+        if(err){
+            console.log(err);
+            return res.render("registertech")
+        }
+        pass.authenticate("local")(req,res,function(){
+           res.redirect("/surveystech"); 
+        });
+    });
+})
+    
+//Show login form
+app.get("/logintech", function(req, res) {
+    res.render("logintech");
+});
+
+app.post("/logintech", pass.authenticate("local", {
+    successRedirect: "/surveystech",
+    failureRedirect: "/logintech"
+    }), function(req, res) {
+});
+
+
 //LOGOUT ROUTE
 app.get("/logout", function(req,res){
     req.logout();
     res.redirect("/");
-})
+});
 
 
 app.listen(process.env.PORT,process.env.IP, function(){
