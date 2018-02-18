@@ -133,6 +133,7 @@ app.get("/login", function(req, res) {
     res.render("login");
 });
 
+//Login logic
 app.post('/login', function(req, res, next) {
     passport.authenticate('local', function(err, user, info) {
         if (err) { return next(err); }
@@ -149,6 +150,9 @@ app.post('/login', function(req, res, next) {
                         // Redirect if it succeeds
                         return res.redirect('/surveys');
                     });
+                }
+                else {
+                    return res.redirect("/login");
                 }
             }
         });
@@ -194,6 +198,7 @@ app.get("/logintech", function(req, res) {
 // }})}
 // );
 
+//Login logic
 app.post('/logintech', function(req, res, next) {
     passport.authenticate('local', function(err, user, info) {
         if (err) { return next(err); }
@@ -210,6 +215,9 @@ app.post('/logintech', function(req, res, next) {
                         // Redirect if it succeeds
                         return res.redirect('/surveystech');
                     });
+                }
+                else {
+                    return res.redirect("/logintech");
                 }
             }
         });
