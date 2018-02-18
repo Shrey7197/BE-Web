@@ -1,7 +1,6 @@
 var express       = require("express"),
     app           = express(),
     bodyParser    = require("body-parser"),
-    bcrypt        = require("bcrypt"),
     mongoose      = require("mongoose"),
     passport      = require("passport"),
     pass          = require("passport"),
