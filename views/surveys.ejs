@@ -5,9 +5,6 @@
         <div class="container">
             <h1 style="color:white">AgriDrone</h1>
             <h4 style="color:white">Helping farmers to drive down the cost and time required while imporoving the crop yield</h4>
-            <p style="color:white">
-                Welcome <%= currentUser.username %>
-            </p>
         </div>
     </header>
     
@@ -16,7 +13,7 @@
         <% surveys.forEach(function(survey){ %>
         <div class="col-md-4 col-sm-6">
             <div class="thumbnail">
-                <img style="height:200px; width:275px" src="<%= survey.image %>">
+                <img style="height:250px; width:380px" src="<%= survey.image %>">
                 <div class="caption">
                     <h4><%= survey.date %></h4>
                 </div>

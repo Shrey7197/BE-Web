@@ -2,7 +2,8 @@ var mongoose = require("mongoose");
 mongoose.Promise = global.Promise;
 
 var surveySchema = new mongoose.Schema({
-    username: String,
+    technicianUsername: String,
+    farmerUsername: String,
     date : String,
     image : String
 });

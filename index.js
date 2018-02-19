@@ -46,8 +46,7 @@ app.get("/",function(req,res){
 });
 
 app.get("/surveys", middleware.isFarmer ,function(req,res){
-    console.log(req.user.username);
-    Survey.find({"username": req.user.username},function(err,surveys){
+    Survey.find({"farmerUsername": req.user.username},function(err,surveys){
         if(err){
             console.log(err);
         }
@@ -58,14 +57,22 @@ app.get("/surveys", middleware.isFarmer ,function(req,res){
 });
 
 app.get("/surveystech", middleware.isTechnician ,function(req,res){
-    res.render("surveystech");
+    Survey.find({"technicianUsername": req.user.username},function(err,surveys){
+        if(err){
+            console.log(err);
+        }
+        else {
+            res.render("surveystech",{surveys:surveys});
+        }
+    });
 });
 
 app.post("/surveystech", middleware.isTechnician ,function(req,res){
-    var username = req.body.username;
+    var technicianUsername = req.user.username;
+    var farmerUsername = req.body.username;
     var date = req.body.date;
     var image = req.body.image;
-    var newSurvey = {username:username, date:date, image:image}
+    var newSurvey = {technicianUsername:technicianUsername, farmerUsername:farmerUsername, date:date, image:image};
 //    surveys.push(newSurvey);
     Survey.create(newSurvey,function(err,newlyCreated){
         if(err){
@@ -111,7 +118,7 @@ app.post("/register", function(req,res){
             return res.render("register");
         }
         passport.authenticate("local")(req,res,function(){
-            req.flash("success","Farmer Successfully Signed Up! Hello "+farmer.username);
+            req.flash("success","Farmer Successfully Signed Up! Hello "+farmer.username+".");
             res.redirect("/surveys"); 
         });
     });
@@ -142,7 +149,7 @@ app.post("/registertech", function(req,res){
             res.redirect("registertech");
         }
         passport.authenticate("local")(req,res,function(){
-            req.flash("success","Successfully Signed Up! Hello "+technician.username);
+            req.flash("success","Successfully Signed Up! Hello "+technician.username+".");
             res.redirect("/surveystech"); 
         });
     });

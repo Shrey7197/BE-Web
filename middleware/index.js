@@ -32,8 +32,6 @@ middlewareObj.loginTechnician = function(req,res,next){
             res.redirect("/logintech");
         }
         else{
-            console.log(req.body.username);
-            console.log(foundUser);
             if(foundUser.type == 2) {
                 req.logIn(foundUser, function(err) {
                     if (err) { return next(err); }
