@@ -4,15 +4,19 @@ var express       = require("express"),
     mongoose      = require("mongoose"),
     passport      = require("passport"),
     localStrategy = require("passport-local"),
-    User          = require("./models/user");
+    User          = require("./models/user"),
+    Survey        = require("./models/survey"),
+    flash         = require("connect-flash"),
+    middleware = require("./middleware");
     
-//var url = process.env.DATABASEURL || "mongodb://localhost/agri_drone";
-mongoose.connect("mongodb://Shrey:Shrey7!97@ds231658.mlab.com:31658/agridrone");
-//mongoose.connect(url);
+var url = process.env.DATABASEURL || "mongodb://localhost/agri_drone";
+//mongoose.connect("mongodb://Shrey:Shrey7!97@ds231658.mlab.com:31658/agridrone");
+mongoose.connect(url);
     
 app.use(bodyParser.urlencoded({extended:true}));
 app.set("view engine","ejs");
 app.use(express.static(__dirname + "/public"));
+app.use(flash());
 
 
 //PASSPORT CONFIGURATION
@@ -30,38 +34,20 @@ passport.use(new localStrategy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
-
-//SCHEMA SETUP
-var surveySchema = new mongoose.Schema({
-    username: String,
-    date : String,
-    image : String
+app.use(function(req,res,next){
+    res.locals.currentUser = req.user;
+    res.locals.error = req.flash("error");
+    res.locals.success = req.flash("success");
+    next();
 });
-
-var Survey = mongoose.model("Survey",surveySchema);
-
-// Survey.create(
-//     {
-//         username : "ganshyamdas",
-//         date: "15-01-2018", 
-//         image:"https://i.ytimg.com/vi/GmPIh2JLCxo/maxresdefault.jpg"
-//     }, function(err,survey){
-//         if(err){
-//             console.log(err);
-//         }
-//         else {
-//             console.log("Newly created survey");
-//             console.log(survey);
-//         }
-//     }    
-// )
 
 app.get("/",function(req,res){
     res.render("landing");
 });
 
-app.get("/surveys",function(req,res){
-    Survey.find({},function(err,surveys){
+app.get("/surveys", middleware.isFarmer ,function(req,res){
+    console.log(req.user.username);
+    Survey.find({"username": req.user.username},function(err,surveys){
         if(err){
             console.log(err);
         }
@@ -71,11 +57,11 @@ app.get("/surveys",function(req,res){
     });
 });
 
-app.get("/surveystech",function(req,res){
+app.get("/surveystech", middleware.isTechnician ,function(req,res){
     res.render("surveystech");
 });
 
-app.post("/surveys",function(req,res){
+app.post("/surveystech", middleware.isTechnician ,function(req,res){
     var username = req.body.username;
     var date = req.body.date;
     var image = req.body.image;
@@ -86,16 +72,17 @@ app.post("/surveys",function(req,res){
             console.log(err);
         }    
         else{
-            res.render("/surveys",{username: username});        
+            req.flash("success","Survey Successfully Added!");
+            res.redirect("surveystech");
         }
     });
 });
 
-app.get("/surveys/new",function(req,res){
+app.get("/surveystech/new", middleware.isTechnician ,function(req,res){
    res.render("new"); 
 });
 
-app.get("/surveys/:id",function(req,res){
+app.get("/surveys/:id", middleware.isFarmer ,function(req,res){
     Survey.findById(req.params.id,function(err,foundSurvey){
         if(err){
             console.log(err);
@@ -108,6 +95,7 @@ app.get("/surveys/:id",function(req,res){
 });
 
 //AUTHENTICATION ROUTES
+
 //Farmer routes
 //Show Register Form
 app.get("/register", function(req, res) {
@@ -119,11 +107,12 @@ app.post("/register", function(req,res){
     var newFarmer = new User({username: req.body.username, type: 1});
     User.register(newFarmer, req.body.password, function(err,farmer){
         if(err){
-            console.log(err);
+            req.flash("error",err.message);
             return res.render("register");
         }
         passport.authenticate("local")(req,res,function(){
-           res.redirect("/surveys"); 
+            req.flash("success","Farmer Successfully Signed Up! Hello "+farmer.username);
+            res.redirect("/surveys"); 
         });
     });
 });
@@ -134,29 +123,8 @@ app.get("/login", function(req, res) {
 });
 
 //Login logic
-app.post('/login', function(req, res, next) {
-    passport.authenticate('local', function(err, user, info) {
-        if (err) { return next(err); }
-        // Redirect if it fails
-        if (!user) { return res.redirect('/login'); }
-        User.findByUsername(req.body.username, function(err, foundUser) {
-            if(err){
-                console.log(err);
-            }
-            else{
-                if(foundUser.type == 1) {
-                    req.logIn(user, function(err) {
-                        if (err) { return next(err); }
-                        // Redirect if it succeeds
-                        return res.redirect('/surveys');
-                    });
-                }
-                else {
-                    return res.redirect("/login");
-                }
-            }
-        });
-    })(req, res, next);
+app.post('/login', middleware.loginFarmer, function(req, res, next) {
+    passport.authenticate('local')(req, res, next);
 });
 
 //Technician routes
@@ -168,13 +136,14 @@ app.get("/registertech", function(req, res) {
 //Signup logic
 app.post("/registertech", function(req,res){
     var newTechnician = new User({username: req.body.username, type:2});
-    User.register(newTechnician, req.body.password, function(err,farmer){
+    User.register(newTechnician, req.body.password, function(err,technician){
         if(err){
-            console.log(err);
-            return res.render("registertech");
+            req.flash("error",err);
+            res.redirect("registertech");
         }
         passport.authenticate("local")(req,res,function(){
-           res.redirect("/surveystech"); 
+            req.flash("success","Successfully Signed Up! Hello "+technician.username);
+            res.redirect("/surveystech"); 
         });
     });
 });
@@ -184,49 +153,15 @@ app.get("/logintech", function(req, res) {
     res.render("logintech");
 });
 
-// app.post("/logintech",  passport.authenticate("local", {
-//     successRedirect: "/surveystech",
-//     failureRedirect: "/logintech"
-//     }) , function(req, res) {
-//         User.findByUsername(req.body.username, function(err, foundUser) {
-//             if(err){
-//                 console.log(err);
-//             }
-//             else{
-//                 console.log(foundUser.type);
-                
-// }})}
-// );
-
 //Login logic
-app.post('/logintech', function(req, res, next) {
-    passport.authenticate('local', function(err, user, info) {
-        if (err) { return next(err); }
-        // Redirect if it fails
-        if (!user) { return res.redirect('/logintech'); }
-        User.findByUsername(req.body.username, function(err, foundUser) {
-            if(err){
-                console.log(err);
-            }
-            else{
-                if(foundUser.type == 2) {
-                    req.logIn(user, function(err) {
-                        if (err) { return next(err); }
-                        // Redirect if it succeeds
-                        return res.redirect('/surveystech');
-                    });
-                }
-                else {
-                    return res.redirect("/logintech");
-                }
-            }
-        });
-    })(req, res, next);
+app.post('/logintech', middleware.loginTechnician, function(req, res, next) {
+    passport.authenticate('local')(req, res, next);
 });
 
 //LOGOUT ROUTE
 app.get("/logout", function(req,res){
     req.logout();
+    req.flash("success","Logged you out!");
     res.redirect("/");
 });
 

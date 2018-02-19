@@ -9,7 +9,7 @@
         <nav class="navbar navbar-default">
             <div class="container-fluid">
                 <div class="navbar-header">
-                    <a class="navbar-brand" href="/">AgriDrone</a>
+                    <a class="navbar-brand" href="/surveystech">AgriDrone</a>
                 </div>
                 <div class="collapse navbar-collapse">
                     <ul class="nav navbar-nav navbar-right">
@@ -19,6 +19,20 @@
             </div>
             
         </nav>
+        
+        <div class="container">
+            <% if(error && error.length>0) { %>
+                <div class="alert alert-danger" role="alert">
+                    <%= error %>    
+                </div>
+            <% } %>
+            
+            <% if(success && success.length>0) { %>
+                <div class="alert alert-success" role="alert">
+                    <%= success %>    
+                </div>
+            <% } %>
+        </div>
 
 <div class="container">
     <header class="jumbotron" style="background-image: url('https://3c1703fe8d.site.internapcdn.net/newman/gfx/news/hires/2017/eusfuturecyb.jpg');">
@@ -26,7 +40,7 @@
             <h1 style="color:white">AgriDrone</h1>
             <h4 style="color:white">Helping farmers to drive down the cost and time required while imporoving the crop yield</h4>
             <p>
-                <a class="btn btn-success" href="/surveys/new">Add a new Survey!</a>
+                <a class="btn btn-success" href="/surveystech/new">Add a new Survey!</a>
             </p>
         </div>
     </header>
