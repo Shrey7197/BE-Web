@@ -9,9 +9,9 @@ var express       = require("express"),
     flash         = require("connect-flash"),
     middleware = require("./middleware");
     
-//var url = process.env.DATABASEURL || "mongodb://localhost/agri_drone";
-mongoose.connect("mongodb://Shrey:Shrey7!97@ds231658.mlab.com:31658/agridrone");
-//mongoose.connect(url);
+var url = process.env.DATABASEURL || "mongodb://localhost/agri_drone";
+//mongoose.connect("mongodb://Shrey:Shrey7!97@ds231658.mlab.com:31658/agridrone");
+mongoose.connect(url);
     
 app.use(bodyParser.urlencoded({extended:true}));
 app.set("view engine","ejs");
@@ -145,7 +145,7 @@ app.post("/registertech", function(req,res){
     var newTechnician = new User({username: req.body.username, type:2});
     User.register(newTechnician, req.body.password, function(err,technician){
         if(err){
-            req.flash("error",err);
+            req.flash("error",err.message);
             res.redirect("registertech");
         }
         passport.authenticate("local")(req,res,function(){

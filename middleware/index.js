@@ -33,11 +33,17 @@ middlewareObj.loginTechnician = function(req,res,next){
         }
         else{
             if(foundUser.type == 2) {
-                req.logIn(foundUser, function(err) {
-                    if (err) { return next(err); }
-                    req.flash("success","Technician Successfully Logged In! Hello "+foundUser.username+".");
-                    return res.redirect('/surveystech');
-                });
+                if(foundUser.password === req.body.password){
+                    req.logIn(foundUser, function(err) {
+                        if (err) { return next(err); }
+                        req.flash("success","Technician Successfully Logged In! Hello "+foundUser.username+".");
+                        return res.redirect('/surveystech');
+                    });
+                }
+                else {
+                    req.flash("error","Wrong Password Entered!");
+                    return res.redirect("/logintech");
+                }
             }
             else {
                 req.flash("error","Farmer's credentials entered. Redirecting to Farmer Login Page");
@@ -78,13 +84,23 @@ middlewareObj.loginFarmer = function(req,res,next){
             req.flash("error","Farmer not found!");
             res.redirect("/login");
         }
+        if(!foundUser){
+            req.flash("error","Farmer not found");
+            res.redirect("/login");
+        }
         else{
             if(foundUser.type == 1) {
-                req.logIn(foundUser, function(err) {
-                    if (err) { return next(err); }
-                    req.flash("success","Farmer Successfully Logged In! Hello "+foundUser.username);
-                    return res.redirect('/surveys');
-                });
+                if(foundUser.password === req.body.password){
+                    req.logIn(foundUser, function(err) {
+                        if (err) { return next(err); }
+                        req.flash("success","Farmer Successfully Logged In! Hello "+foundUser.username);
+                        return res.redirect('/surveys');
+                    });
+                }
+                else {
+                    req.flash("error","Wrong Password Entered");
+                    res.redirect("/login");
+                }
             }
             else {
                 req.flash("error","Technician's credentials entered. Redirecting to Technician Login Page"+".");
