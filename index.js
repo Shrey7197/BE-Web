@@ -130,8 +130,40 @@ app.get("/login", function(req, res) {
 });
 
 //Login logic
-app.post('/login', middleware.loginFarmer, function(req, res, next) {
-    passport.authenticate('local')(req, res, next);
+app.post('/login', function(req, res, next) {
+  passport.authenticate('local', function(err, user, info) {
+    if (err) { 
+        req.flash("error",err.message);
+        return res.redirect("login"); 
+    }
+    if (!user) {
+      // *** Display message without using flash option
+      // re-render the login form with a message
+      req.flash("error","Incorrect Login Credentials");
+      return res.redirect('login');
+    }
+    
+    User.findByUsername(req.body.username, function(err, foundUser) {
+        if(err){
+            req.flash("error",err.message);
+            res.redirect("/login");
+        }
+        else{
+            if(foundUser.type == 1) {
+                req.logIn(foundUser, function(err) {
+                    if (err) { console.log(err); }
+                    req.flash("success","Farmer Successfully Logged In! Hello "+foundUser.username+".");
+                    return res.redirect('/surveys');
+            
+                });    
+            }
+            else {
+                req.flash("error","Technician's credentials entered. Redirecting to Technician Login Page");
+                return res.redirect("/logintech");
+            }
+        }
+    });
+  })(req, res, next);
 });
 
 //Technician routes
@@ -161,8 +193,40 @@ app.get("/logintech", function(req, res) {
 });
 
 //Login logic
-app.post('/logintech', middleware.loginTechnician, function(req, res, next) {
-    passport.authenticate('local')(req, res, next);
+app.post('/logintech', function(req, res, next) {
+  passport.authenticate('local', function(err, user, info) {
+    if (err) { 
+        req.flash("error",err.message);
+        return res.redirect("logintech"); 
+    }
+    if (!user) {
+      // *** Display message without using flash option
+      // re-render the login form with a message
+      req.flash("error","Incorrect Login Credentials");
+      return res.redirect('logintech');
+    }
+    
+    User.findByUsername(req.body.username, function(err, foundUser) {
+        if(err){
+            req.flash("error",err.message);
+            res.redirect("/logintech");
+        }
+        else{
+            if(foundUser.type == 2) {
+                req.logIn(foundUser, function(err) {
+                    if (err) { console.log(err); }
+                    req.flash("success","Technician Successfully Logged In! Hello "+foundUser.username+".");
+                    return res.redirect('/surveystech');
+            
+                });    
+            }
+            else {
+                req.flash("error","Farmer's credentials entered. Redirecting to Farmer Login Page");
+                return res.redirect("/login");
+            }
+        }
+    });
+  })(req, res, next);
 });
 
 //LOGOUT ROUTE

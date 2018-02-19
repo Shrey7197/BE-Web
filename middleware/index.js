@@ -25,35 +25,6 @@ middlewareObj.isTechnician = function(req,res,next){
     }
 };
 
-middlewareObj.loginTechnician = function(req,res,next){
-    User.findByUsername(req.body.username, function(err, foundUser) {
-        if(err){
-            req.flash("error",err);
-            res.redirect("/logintech");
-        }
-        else{
-            if(foundUser.type == 2) {
-                //if(foundUser.password === req.body.password){
-                    req.logIn(foundUser, function(err) {
-                        if (err) { return next(err); }
-                        req.flash("success","Technician Successfully Logged In! Hello "+foundUser.username+".");
-                        return res.redirect('/surveystech');
-                    });
-                //}
-                //else {
-                //     console.log(req.body.password)
-                //     req.flash("error","Wrong Password Entered!");
-                //     return res.redirect("/logintech");
-                // }
-            }
-            else {
-                req.flash("error","Farmer's credentials entered. Redirecting to Farmer Login Page");
-                return res.redirect("/login");
-            }
-        }
-    });
-};
-
 middlewareObj.isFarmer = function(req,res,next){
     if(req.isAuthenticated()) {
         User.findByUsername(req.user.username, function(err, foundUser) {
@@ -76,39 +47,6 @@ middlewareObj.isFarmer = function(req,res,next){
         req.flash("error","You need to be logged in as a Farmer to access this page!");
         res.redirect("/login");
     }
-};
-
-
-middlewareObj.loginFarmer = function(req,res,next){
-    User.findByUsername(req.body.username, function(err, foundUser) {
-        if(err){
-            req.flash("error","Farmer not found!");
-            res.redirect("/login");
-        }
-        if(!foundUser){
-            req.flash("error","Farmer not found");
-            res.redirect("/login");
-        }
-        else{
-            if(foundUser.type == 1) {
-                if(foundUser.password === req.body.password){
-                    req.logIn(foundUser, function(err) {
-                        if (err) { return next(err); }
-                        req.flash("success","Farmer Successfully Logged In! Hello "+foundUser.username);
-                        return res.redirect('/surveys');
-                    });
-                }
-                else {
-                    req.flash("error","Wrong Password Entered");
-                    res.redirect("/login");
-                }
-            }
-            else {
-                req.flash("error","Technician's credentials entered. Redirecting to Technician Login Page"+".");
-                return res.redirect("/logintech");
-            }
-        }
-    });
 };
 
 module.exports = middlewareObj;
