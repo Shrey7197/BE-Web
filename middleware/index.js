@@ -33,17 +33,18 @@ middlewareObj.loginTechnician = function(req,res,next){
         }
         else{
             if(foundUser.type == 2) {
-                if(foundUser.password === req.body.password){
+                //if(foundUser.password === req.body.password){
                     req.logIn(foundUser, function(err) {
                         if (err) { return next(err); }
                         req.flash("success","Technician Successfully Logged In! Hello "+foundUser.username+".");
                         return res.redirect('/surveystech');
                     });
-                }
-                else {
-                    req.flash("error","Wrong Password Entered!");
-                    return res.redirect("/logintech");
-                }
+                //}
+                //else {
+                //     console.log(req.body.password)
+                //     req.flash("error","Wrong Password Entered!");
+                //     return res.redirect("/logintech");
+                // }
             }
             else {
                 req.flash("error","Farmer's credentials entered. Redirecting to Farmer Login Page");
